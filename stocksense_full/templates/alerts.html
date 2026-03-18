@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Alerts{% endblock %}
+{% block content %}
+<div class="page-header"><h1 class="page-title">Price Alerts</h1><p class="page-sub">Get notified when a stock hits your target</p></div>
+<div class="two-col-layout">
+  <div class="card">
+    <div class="card-title">Set alert</div>
+    <form method="POST" action="/alerts/add">
+      <div class="form-field"><label>Ticker</label><input type="text" name="ticker" placeholder="AAPL" required/></div>
+      <div class="form-field"><label>Target price ($)</label><input type="number" name="target_price" placeholder="200.00" step="0.01" required/></div>
+      <div class="form-field">
+        <label>Alert when price is</label>
+        <select name="direction">
+          <option value="above">Above target</option>
+          <option value="below">Below target</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Set alert</button>
+    </form>
+  </div>
+  <div class="card" style="flex:2">
+    <div class="card-title">Active alerts</div>
+    {% for a in alerts %}
+    <div class="port-row">
+      <div>
+        <div class="port-sym">{{ a.ticker }}</div>
+        <div class="port-detail">Alert when price is {{ a.direction }} ${{ a.target_price }}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="hist-badge {% if a.triggered %}badge-hit{% else %}badge-pending{% endif %}">
+          {% if a.triggered %}Triggered{% else %}Active{% endif %}
+        </span>
+        <form method="POST" action="/alerts/remove/{{ a.id }}"><button type="submit" class="btn-remove">✕</button></form>
+      </div>
+    </div>
+    {% else %}
+    <p class="empty-msg">No alerts set. Add one using the form.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

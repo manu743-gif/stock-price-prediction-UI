@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Predict{% endblock %}
+{% block content %}
+<div class="page-header"><h1 class="page-title">New Prediction</h1><p class="page-sub">Run AI-powered stock price forecasts</p></div>
+
+<div class="predict-layout">
+  <div class="card predict-form-card">
+    <div class="card-title">Configure prediction</div>
+    <form method="POST" action="/predict">
+      <div class="form-field">
+        <label>Stock ticker</label>
+        <input type="text" name="ticker" placeholder="AAPL, TSLA, MSFT..." value="{{ result.ticker if result else '' }}" required/>
+      </div>
+      <div class="form-field">
+        <label>Forecast horizon</label>
+        <select name="horizon">
+          <option value="7"  {% if result and result.horizon==7  %}selected{% endif %}>7 days</option>
+          <option value="14" {% if result and result.horizon==14 %}selected{% endif %}>14 days</option>
+          <option value="30" {% if result and result.horizon==30 %}selected{% endif %}>30 days</option>
+          <option value="90" {% if result and result.horizon==90 %}selected{% endif %}>90 days</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Run Prediction</button>
+    </form>
+  </div>
+
+  {% if result %}
+  <div class="card pred-result-card">
+    <div class="card-title">{{ result.ticker }} · {{ result.horizon }}-day forecast</div>
+    <div class="result-price">${{ result.target }}</div>
+    <div class="result-change {% if result.change_pct >= 0 %}profit{% else %}loss{% endif %}">
+      {% if result.change_pct >= 0 %}▲{% else %}▼{% endif %}
+      {{ result.change_pct }}% from ${{ result.current }}
+    </div>
+    <div class="result-grid">
+      <div class="result-cell"><div class="rc-label">Low estimate</div><div class="rc-val">${{ result.low }}</div></div>
+      <div class="result-cell"><div class="rc-label">High estimate</div><div class="rc-val">${{ result.high }}</div></div>
+      <div class="result-cell"><div class="rc-label">Model</div><div class="rc-val">{{ result.model }}</div></div>
+      <div class="result-cell"><div class="rc-label">Confidence</div><div class="rc-val">{{ result.confidence }}%</div></div>
+    </div>
+    <div class="conf-track" style="margin-top:12px"><div class="conf-fill" style="width:{{ result.confidence }}%"></div></div>
+    <div class="pred-tags" style="margin-top:10px">
+      {% for s in result.signals %}<span class="pred-tag">{{ s }}</span>{% endfor %}
+    </div>
+    <p class="disclaimer">⚠ Predictions are for educational purposes only. Not financial advice.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

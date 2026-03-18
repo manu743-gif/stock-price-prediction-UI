@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Prediction History</h1>
+  <p class="page-sub">{{ total }} predictions · {{ hits }} hits · {{ misses }} misses</p>
+</div>
+
+<div class="card">
+  <div class="card-title">All predictions
+    <form method="GET" style="display:inline;margin-left:auto">
+      <input name="ticker" placeholder="Filter by ticker" value="{{ filter_ticker or '' }}" style="padding:4px 10px;border-radius:7px;border:0.5px solid #e5e7eb;font-size:12px;outline:none"/>
+      <button type="submit" class="btn btn-ghost" style="padding:5px 12px;font-size:12px">Filter</button>
+    </form>
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Ticker</th><th>Predicted</th><th>Actual</th><th>Horizon</th><th>Model</th><th>Confidence</th><th>Result</th><th>Date</th></tr>
+    </thead>
+    <tbody>
+      {% for h in history %}
+      <tr>
+        <td><span class="ticker-mono">{{ h.ticker }}</span></td>
+        <td>${{ h.predicted }}</td>
+        <td>{% if h.actual != 'Pending' %}${{ h.actual }}{% else %}<span class="muted">Pending</span>{% endif %}</td>
+        <td>{{ h.horizon }}d</td>
+        <td>{{ h.model }}</td>
+        <td>{{ h.confidence }}%</td>
+        <td>
+          {% if h.hit == true %}<span class="hist-badge badge-hit">Hit</span>
+          {% elif h.hit == false %}<span class="hist-badge badge-miss">Miss</span>
+          {% else %}<span class="hist-badge badge-pending">Pending</span>{% endif %}
+        </td>
+        <td class="muted">{{ h.date }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="8" class="empty-msg" style="text-align:center;padding:20px">No predictions yet. <a href="/predict">Make your first →</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

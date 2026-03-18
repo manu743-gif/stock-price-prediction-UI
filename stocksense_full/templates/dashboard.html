@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — {{ selected_ticker }}{% endblock %}
+{% block content %}
+
+<div class="greeting-row">
+  <div>
+    <h1 class="greeting-text">Good {{ time_of_day }}, <span class="accent">{{ current_user.first_name }}</span></h1>
+    <p class="greeting-sub">{{ current_date }}</p>
+  </div>
+  <div class="ticker-badge">{{ selected_ticker }}</div>
+</div>
+
+<!-- STAT CARDS -->
+<div class="stats-grid">
+  <div class="stat-card grad-purple">
+    <div class="stat-label">Portfolio value</div>
+    <div class="stat-value">${{ portfolio.total_value | fmt }}</div>
+    <div class="stat-sub">{% if portfolio.weekly_change >= 0 %}+{% endif %}${{ portfolio.weekly_change | fmt }} this week</div>
+  </div>
+  <div class="stat-card grad-coral">
+    <div class="stat-label">Today's P&amp;L</div>
+    <div class="stat-value">{% if portfolio.daily_pnl >= 0 %}+{% endif %}${{ portfolio.daily_pnl | fmt }}</div>
+    <div class="stat-sub">{{ portfolio.daily_pnl_pct }}% overall</div>
+  </div>
+  <div class="stat-card grad-green">
+    <div class="stat-label">Model accuracy</div>
+    <div class="stat-value">{{ model_stats.accuracy }}%</div>
+    <div class="stat-sub">Last {{ model_stats.sample_size }} predictions</div>
+  </div>
+  <div class="stat-card stat-card-white">
+    <div class="stat-label dark">Active predictions</div>
+    <div class="stat-value dark">{{ predictions.active_count }}</div>
+    <div class="stat-sub dark">{{ predictions.bullish }} bullish · {{ predictions.bearish }} bearish</div>
+  </div>
+</div>
+
+<!-- MID ROW -->
+<div class="mid-grid">
+  <div class="card">
+    <div class="card-title">{{ selected_ticker }} candlestick — 1 week <span class="badge badge-purple">OHLC</span></div>
+    <div class="candle-chart" id="candleChart"></div>
+    <div class="candle-legend">
+      <span class="legend-dot green"></span><span>Bullish</span>
+      <span class="legend-dot red"></span><span>Bearish</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">News feed <span class="badge badge-purple">{{ selected_ticker }}</span></div>
+    {% for item in news_items %}
+    <div class="news-item">
+      <span class="news-dot {{ item.sentiment }}"></span>
+      <div class="news-body">
+        <div class="news-text">{{ item.headline }}</div>
+        <div class="news-meta">{{ item.source }} · {{ item.time_ago }}</div>
+      </div>
+    </div>
+    {% else %}
+    <p class="empty-msg">No news available.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- BOTTOM ROW -->
+<div class="bottom-grid">
+  <div class="card">
+    <div class="card-title">Portfolio P&amp;L tracker</div>
+    {% for h in portfolio.holdings %}
+    <div class="port-row">
+      <div>
+        <div class="port-sym">{{ h.symbol }}</div>
+        <div class="port-detail">{{ h.shares }} shares · avg ${{ h.avg_price }}</div>
+      </div>
+      <div class="port-right">
+        <div class="port-pnl {% if h.pnl >= 0 %}profit{% else %}loss{% endif %}">
+          {% if h.pnl >= 0 %}+{% endif %}${{ h.pnl | fmt }}
+        </div>
+        <div class="port-pct {% if h.pnl_pct >= 0 %}profit{% else %}loss{% endif %}">
+          {% if h.pnl_pct >= 0 %}+{% endif %}{{ h.pnl_pct }}%
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <p class="empty-msg">No holdings yet. <a href="/portfolio">Add stocks →</a></p>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <div class="card-title">Prediction history</div>
+    {% for p in prediction_history %}
+    <div class="hist-row">
+      <span class="hist-badge {% if p.hit %}badge-hit{% elif p.hit == false %}badge-miss{% else %}badge-pending{% endif %}">
+        {% if p.hit %}Hit{% elif p.hit == false %}Miss{% else %}Pending{% endif %}
+      </span>
+      <div class="hist-text">{{ p.ticker }} ${{ p.predicted }} → {{ p.actual }}</div>
+      <div class="hist-time">{{ p.time_ago }}</div>
+    </div>
+    {% else %}
+    <p class="empty-msg">No predictions yet. <a href="/predict">Make one →</a></p>
+    {% endfor %}
+    <a href="/history" class="view-all">View all history →</a>
+  </div>
+
+  <div class="card pred-hero">
+    <div class="pred-label">{{ active_prediction.ticker }} · {{ active_prediction.horizon }}-day prediction</div>
+    <div class="pred-price">${{ active_prediction.target }}</div>
+    <div class="pred-change">{% if active_prediction.change_pct >= 0 %}+{% endif %}{{ active_prediction.change_pct }}% from ${{ active_prediction.current_price }}</div>
+    <div class="pred-row">
+      <div><div class="pred-mini-label">Low</div><div class="pred-mini-val">${{ active_prediction.low }}</div></div>
+      <div><div class="pred-mini-label">High</div><div class="pred-mini-val">${{ active_prediction.high }}</div></div>
+      <div><div class="pred-mini-label">Model</div><div class="pred-mini-val">{{ active_prediction.model }}</div></div>
+    </div>
+    <div class="pred-mini-label" style="margin-top:10px">Confidence — {{ active_prediction.confidence }}%</div>
+    <div class="conf-track"><div class="conf-fill" style="width:{{ active_prediction.confidence }}%"></div></div>
+    <div class="pred-tags">
+      {% for s in active_prediction.signals %}<span class="pred-tag">{{ s }}</span>{% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+  renderCandlestick('candleChart', {{ ohlc_data | tojson }});
+</script>
+{% endblock %}

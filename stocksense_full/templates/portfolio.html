@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Portfolio{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Portfolio</h1>
+  <p class="page-sub">Total value: ${{ total_value | fmt }} · P&L: <span class="{% if total_pnl >= 0 %}profit{% else %}loss{% endif %}">{% if total_pnl >= 0 %}+{% endif %}${{ total_pnl | fmt }} ({{ total_pnl_pct }}%)</span></p>
+</div>
+<div class="two-col-layout">
+  <div class="card">
+    <div class="card-title">Add holding</div>
+    <form method="POST" action="/portfolio/add">
+      <div class="form-field"><label>Ticker</label><input type="text" name="symbol" placeholder="AAPL" required/></div>
+      <div class="form-field"><label>Shares</label><input type="number" name="shares" placeholder="10" step="0.01" required/></div>
+      <div class="form-field"><label>Avg buy price ($)</label><input type="number" name="avg_price" placeholder="150.00" step="0.01" required/></div>
+      <button type="submit" class="btn btn-primary btn-full">Add holding</button>
+    </form>
+  </div>
+  <div class="card" style="flex:2">
+    <div class="card-title">Holdings</div>
+    {% for h in holdings %}
+    <div class="port-row">
+      <div><div class="port-sym">{{ h.symbol }}</div><div class="port-detail">{{ h.shares }} shares · avg ${{ h.avg_price }} · current ${{ h.current_price }}</div></div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <div class="port-right">
+          <div class="port-pnl {% if h.pnl >= 0 %}profit{% else %}loss{% endif %}">{% if h.pnl >= 0 %}+{% endif %}${{ h.pnl | fmt }}</div>
+          <div class="port-pct {% if h.pnl_pct >= 0 %}profit{% else %}loss{% endif %}">{{ h.pnl_pct }}%</div>
+        </div>
+        <form method="POST" action="/portfolio/remove/{{ h.id }}"><button type="submit" class="btn-remove">✕</button></form>
+      </div>
+    </div>
+    {% else %}
+    <p class="empty-msg">No holdings yet. Add your first stock above.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

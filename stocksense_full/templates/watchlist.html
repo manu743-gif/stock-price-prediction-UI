@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Watchlist{% endblock %}
+{% block content %}
+<div class="page-header"><h1 class="page-title">Watchlist</h1><p class="page-sub">Track your favourite stocks</p></div>
+<div class="two-col-layout">
+  <div class="card">
+    <div class="card-title">Add stock</div>
+    <form method="POST" action="/watchlist/add">
+      <div class="form-field"><label>Ticker symbol</label><input type="text" name="ticker" placeholder="e.g. AAPL" required/></div>
+      <button type="submit" class="btn btn-primary btn-full">Add to watchlist</button>
+    </form>
+  </div>
+  <div class="card" style="flex:2">
+    <div class="card-title">Your watchlist ({{ watchlist|length }} stocks)</div>
+    {% for item in watchlist %}
+    <div class="port-row">
+      <div><div class="port-sym">{{ item.ticker }}</div><div class="port-detail">{{ item.name }}</div></div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="port-sym">${{ item.price }}</div>
+        <form method="POST" action="/watchlist/remove/{{ item.id }}">
+          <button type="submit" class="btn-remove">✕</button>
+        </form>
+      </div>
+    </div>
+    {% else %}
+    <p class="empty-msg">No stocks in your watchlist yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

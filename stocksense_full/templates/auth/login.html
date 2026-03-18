@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>StockSense — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}"/>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo"><div class="logo-icon">S</div><span class="logo-text">StockSense</span></div>
+    <h2>Welcome back</h2>
+    <p class="auth-sub">Sign in to continue</p>
+    {% if error %}<div class="error-msg">{{ error }}</div>{% endif %}
+    <form method="POST" action="/login">
+      <div class="form-field"><label>Email</label><input type="email" name="email" placeholder="you@example.com" required/></div>
+      <div class="form-field"><label>Password</label><input type="password" name="password" placeholder="••••••••" required/></div>
+      <button type="submit" class="btn-auth">Sign in</button>
+    </form>
+    <p class="auth-switch">Don't have an account? <a href="/register">Create one</a></p>
+  </div>
+</div>
+</body>
+</html>

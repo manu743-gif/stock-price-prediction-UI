@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>StockSense — {% block title %}Dashboard{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/extra.css') }}"/>
+  {% block head %}{% endblock %}
+
+  <!-- Apply saved theme BEFORE render to prevent flash -->
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('stocksense-theme') || 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch(e) {}
+    })();
+  </script>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="logo-icon">S</div>
+      <div>
+        <div class="logo-name">StockSense</div>
+        <div class="logo-tag">AI Predictions</div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <a href="/dashboard" class="sb-item {% if active_page=='dashboard' %}active{% endif %}">
+        <span class="sb-dot green"></span>Dashboard
+      </a>
+      <a href="/predict" class="sb-item {% if active_page=='predict' %}active{% endif %}">
+        <span class="sb-dot yellow"></span>Predict
+      </a>
+      <a href="/watchlist" class="sb-item {% if active_page=='watchlist' %}active{% endif %}">
+        <span class="sb-dot"></span>Watchlist
+      </a>
+
+      <div class="sb-section">Portfolio</div>
+      <a href="/portfolio" class="sb-item {% if active_page=='portfolio' %}active{% endif %}">
+        <span class="sb-dot green"></span>Holdings
+      </a>
+
+      <div class="sb-section">History</div>
+      <a href="/history" class="sb-item {% if active_page=='history' %}active{% endif %}">
+        <span class="sb-dot"></span>Predictions
+      </a>
+
+      <div class="sb-section">Settings</div>
+      <a href="/alerts" class="sb-item {% if active_page=='alerts' %}active{% endif %}">
+        <span class="sb-dot"></span>Alerts
+      </a>
+      <a href="/account" class="sb-item {% if active_page=='account' %}active{% endif %}">
+        <span class="sb-dot"></span>Account
+      </a>
+      <a href="/logout" class="sb-item">
+        <span class="sb-dot red"></span>Logout
+      </a>
+    </nav>
+
+    <div class="sb-avatar">
+      <div class="avatar-circle">{{ current_user.initials }}</div>
+      <div>
+        <div class="av-name">{{ current_user.name }}</div>
+        <div class="av-plan">{{ current_user.plan }}</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-area">
+    <div class="topbar">
+      <form class="search-wrap" action="/dashboard" method="GET">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <circle cx="6.5" cy="6.5" r="5" stroke="#9ca3af" stroke-width="1.5"/>
+          <path d="M10.5 10.5L14 14" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <input name="ticker" placeholder="Search ticker — AAPL, TSLA, MSFT..." value="{{ selected_ticker or '' }}"/>
+      </form>
+      <a href="/alerts" class="btn btn-ghost">Alerts</a>
+
+      <!-- Dark Mode Toggle -->
+      <button id="theme-toggle-btn" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode"
+              style="background:none;border:none;padding:4px;">
+        <span class="theme-toggle__icon" id="theme-icon">☀️</span>
+        <div class="theme-toggle__track">
+          <div class="theme-toggle__knob"></div>
+        </div>
+      </button>
+
+      <a href="/predict" class="btn btn-primary">+ New Prediction</a>
+    </div>
+
+    <main>{% block content %}{% endblock %}</main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% block scripts %}{% endblock %}
+
+<!-- Dark Mode Logic -->
+<script>
+  (function() {
+    var btn  = document.getElementById('theme-toggle-btn');
+    var icon = document.getElementById('theme-icon');
+    var html = document.documentElement;
+
+    function applyTheme(theme) {
+      html.setAttribute('data-theme', theme);
+      icon.textContent = theme === 'dark' ? '🌙' : '☀️';
+      try { localStorage.setItem('stocksense-theme', theme); } catch(e) {}
+    }
+
+    // Sync icon with current theme on load
+    var current = html.getAttribute('data-theme') || 'light';
+    applyTheme(current);
+
+    btn.addEventListener('click', function() {
+      var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    });
+  })();
+</script>
+</body>
+</html>
+<!-- extra.css link fix -->
